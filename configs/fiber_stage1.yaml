@@ -1,0 +1,28 @@
+name: fiber/stage1
+stage: 1
+dataset:
+  data_dir: data/textile
+  class_name: fiber
+  batch_size: 4
+  num_workers: 8
+model:
+  backbone: wide_resnet50_2
+  pool_type: avg
+  parallel_blocks:
+    - 2
+    - 5
+    - 8
+  c_conds:
+    - 64
+    - 64
+    - 64
+  clamp_alpha: 1.9
+mode: train
+train:
+  epochs: 200
+  optim:
+    lr: 2e-5
+  output_dir: outputs
+eval:
+  top_k: 0.02
+  threshold: 0.6

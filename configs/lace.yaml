@@ -1,0 +1,18 @@
+name: lace
+stage: 0
+dataset:
+  data_dir: data/textile
+  class_name: lace
+  batch_size: 2
+  num_workers: 8
+  augments:
+    - flip_horizontal
+    - flip_vertical
+model:
+  backbone: wide_resnet50_2
+mode: train
+train:
+  epochs: 200
+  optim:
+    lr: 2e-5
+  output_dir: outputs
