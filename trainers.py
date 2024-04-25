@@ -185,7 +185,6 @@ class Trainer:
         self.model.eval()
         label_list = []
         pred_list = []
-        epoch_loss = 0.
 
         p_bar = tqdm(self.test_dataloader, desc=f'<{self.exp_name}> Test Epoch[{self.epoch}/{self.epochs}]')
         for image, label in p_bar:
@@ -193,19 +192,14 @@ class Trainer:
             label = label.to(self.device)
             label_list.extend(label.cpu().numpy())
 
-            logits = self.model(image)
-            loss = F.cross_entropy(logits, label)
-            epoch_loss += loss.item()
             pred = self.model.predict(image)
             pred_list.append(pred)
 
-        epoch_loss /= len(self.val_dataloader)
         accuracy, precision, recall = accuracy_precision_recall2(pred_list, label_list)
-        print(f'Test Epoch: [{self.epoch}/{self.epochs}] Loss: {epoch_loss:.4f}, '
+        print(f'Test Epoch: [{self.epoch}/{self.epochs}]'
               f'Accuracy: {accuracy:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}')
 
         if self.mode == 'train':
-            self.writer.add_scalar('test/loss', epoch_loss, self.epoch)
             self.writer.add_scalar('test/accuracy', accuracy, self.epoch)
             self.writer.add_scalar('test/precision', precision, self.epoch)
             self.writer.add_scalar('test/recall', recall, self.epoch)
