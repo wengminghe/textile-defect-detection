@@ -25,4 +25,4 @@ train:
   output_dir: outputs
 eval:
   top_k: 0.02
-  threshold: 0.6
+  threshold: 0.58

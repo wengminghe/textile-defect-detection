@@ -1,7 +1,7 @@
 import argparse
 from omegaconf import OmegaConf
 
-from trainers import Trainer, TrainerStage1, TrainerStage2
+from trainers import TrainerStage1, TrainerStage2
 
 
 def main():
@@ -10,9 +10,7 @@ def main():
     args = parser.parse_args()
     config = OmegaConf.load(args.config)
 
-    if config['stage'] == 0:
-        trainer = Trainer(config)
-    elif config['stage'] == 1:
+    if config['stage'] == 1:
         trainer = TrainerStage1(config)
     else:
         trainer = TrainerStage2(config)

@@ -3,7 +3,7 @@ stage: 2
 dataset:
   data_dir: data/textile
   class_name: lace
-  batch_size: 4
+  batch_size: 2
   num_workers: 8
 model:
   backbone: wide_resnet50_2
@@ -22,5 +22,8 @@ model_path: outputs/lace/stage1/best_loss_model.pth
 train:
   epochs: 200
   optim:
-    lr: 2e-5
+    lr: 1e-5
   output_dir: outputs
+eval:
+  top_k: 0.02
+  threshold: 0.58

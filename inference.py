@@ -7,7 +7,8 @@ import cv2 as cv
 import torchvision.transforms as T
 from pathlib import Path
 
-from models.model import Model0, Model
+from models.model import Model
+from models.msflow.msflow import MSFlow
 
 
 def main():
@@ -16,9 +17,16 @@ def main():
 
     img_paths, labels = load_dataset_folder(args)
 
-    model = Model0(**vars(args)).to(device)
-    model.load_state_dict(torch.load(args.model_path, map_location='cpu'))
-    model.eval()
+    if args.stage == 1:
+        model = MSFlow(**vars(args)).to(device)
+        state_dict = torch.load(args.model_path, map_location='cpu')
+        model = convert_state_dict(model, state_dict, model)
+        model.eval()
+    else:
+        model = Model(**vars(args)).to(device)
+        state_dict = torch.load(args.model_path, map_location='cpu')
+        model = convert_state_dict(model, state_dict, model.msflow)
+        model.eval()
 
     f_good = open(os.path.join(args.output_dir, "good.txt"), "w")
     f_anomaly = open(os.path.join(args.output_dir, "anomaly.txt"), "w")
@@ -43,6 +51,20 @@ def main():
 
     acc, pre, rec = cal_metric(preds, labels)
     print(f'Accuracy: {acc*100:.2f}%, Precision: {pre*100:.2f}%, Recall: {rec*100:.2f}%')
+
+
+def convert_state_dict(model, state_dict, msflow):
+    maps = {}
+    for i in range(len(msflow.parallel_flows)):
+        maps[msflow.fusion_flow.module_list[i].perm.shape[0]] = i
+    temp = {}
+    for k, v in state_dict.items():
+        if 'fusion_flow' in k and 'perm' in k:
+            temp[k.replace(k.split('.')[-2], str(maps[v.shape[0]]))] = v
+    for k, v in temp.items():
+        state_dict[k] = v
+    model.load_state_dict(state_dict)
+    return model
 
 
 def preprocess(image):
@@ -110,6 +132,7 @@ def save_images(img, mask, img_type, pred, score_map, output_dir, img_name):
 
 def get_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--stage', type=int)
     # dataset
     parser.add_argument('--data_dir', type=str)
     parser.add_argument('--class_name', type=str, default='lace')
